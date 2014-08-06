@@ -8,6 +8,10 @@ on speed and lightness, whilst still retaining vital features.
 [![Build Status](https://travis-ci.org/Solution10/config.svg?branch=master)](https://travis-ci.org/Solution10/config)
 [![Coverage Status](https://coveralls.io/repos/Solution10/config/badge.png)](https://coveralls.io/r/Solution10/config)
 
+[![Latest Stable Version](https://poser.pugx.org/solution10/config/v/stable.svg)](https://packagist.org/packages/solution10/config)
+[![Total Downloads](https://poser.pugx.org/solution10/config/downloads.svg)](https://packagist.org/packages/solution10/config)
+[![License](https://poser.pugx.org/solution10/config/license.svg)](https://packagist.org/packages/solution10/config)
+
 ## Features
 
 - No dependancies
