@@ -5,8 +5,6 @@ This is a tiny, lightning fast way of defining configuration for your app.
 This is deliberately bare-bones and not swamped with options / parsers. The focus is
 on speed and lightness, whilst still retaining vital features.
 
-**WIP: Not quite ready for primetime yet**
-
 [![Build Status](https://travis-ci.org/Solution10/config.svg?branch=master)](https://travis-ci.org/Solution10/config)
 [![Coverage Status](https://coveralls.io/repos/Solution10/config/badge.png)](https://coveralls.io/r/Solution10/config)
 
