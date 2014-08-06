@@ -7,8 +7,8 @@ on speed and lightness, whilst still retaining vital features.
 
 **WIP: Not quite ready for primetime yet**
 
-[![Build Status](https://travis-ci.org/Solution10/calendar.svg?branch=master)](https://travis-ci.org/Solution10/calendar)
-[![Coverage Status](https://coveralls.io/repos/Solution10/calendar/badge.png)](https://coveralls.io/r/Solution10/calendar)
+[![Build Status](https://travis-ci.org/Solution10/config.svg?branch=master)](https://travis-ci.org/Solution10/config)
+[![Coverage Status](https://coveralls.io/repos/Solution10/config/badge.png)](https://coveralls.io/r/Solution10/config)
 
 ## Features
 
@@ -18,7 +18,7 @@ on speed and lightness, whilst still retaining vital features.
 - Extremely light
 - Inheritance; define a base config and override per-environment
 
-## Getting Started
+## Installation
 
 Installation is via composer, in the usual manner:
 
@@ -30,11 +30,13 @@ Installation is via composer, in the usual manner:
 }
 ```
 
-## Further Reading
+## Documentation
 
 ### Userguide
 
 [Check out the Wiki](https://github.com/Solution10/config/wiki)
+
+(or the /docs folder in the repo)
 
 ### API Docs
 
