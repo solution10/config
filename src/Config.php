@@ -32,11 +32,13 @@ class Config
      * an environment. Defaults to "production".
      *
      * @param   string  $path           Path to the config files
-     * @param   string  $environment    Name of the environment to load for.
+     * @param   string  $environment    Name of the environment to load for (null for 'production')
      * @throws  Exception
      */
-    public function __construct($path, $environment = 'production')
+    public function __construct($path, $environment = null)
     {
+        $environment = ($environment === null)? 'production' : $environment;
+
         $this->setBasePath($path);
         $this->setEnvironment($environment);
     }
