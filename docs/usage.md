@@ -20,7 +20,7 @@ Installation is via composer, either in composer.json:
 
 ```json
 {
-    "require" {
+    "require": {
         "solution10/config": "~2.0"
     }
 }
