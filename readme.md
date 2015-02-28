@@ -25,7 +25,7 @@ on speed and lightness, whilst still retaining vital features.
 ## Features
 
 - No dependencies
-- PHP 5.4+
+- PHP 5.4+ (including PHP 7 and HHVM)
 - Lightning fast
 - Extremely light
 - Inheritance; define a base config and override per-environment
