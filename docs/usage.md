@@ -11,18 +11,25 @@ without losing required functionality.
 - [Reading Config](#reading-config)
     - [Overwriting](#overwriting)
     - [Default Values](#default-values)
+- [Requiring Config Files](#requiring-config-files)
 - [Exceptions](#exceptions)
 
 ## Installation
 
-Installation is via composer, as you would expect:
+Installation is via composer, either in composer.json:
 
 ```json
 {
-    "require" {
-        "solution10/config": "1.*"
+    "require": {
+        "solution10/config": "~2.0"
     }
 }
+```
+
+Or even better, through the command line
+
+```sh
+$ composer require solution10/config
 ```
 
 ## Config Format
@@ -166,6 +173,46 @@ provide a default value as the second parameter to get().
 ```php
 $perPage = $config->get('app.paginate.perPage', 25);
 ```
+
+## Requiring Config Files
+
+Let's say you have a routes.php file which defines all of the routes for your application
+in a Silex-y way:
+
+```php
+$app->get('/', function () {
+    return 'Hello World!';
+});
+```
+
+This is clearly config, but needs to be 'required' in the global scope rather than local
+to the Config class.
+
+You may also want to load different routes based on environment, for example, a debugging
+route on all environments other than production.
+
+Starting with Version 2, Solution10\Config supports this.
+
+```php
+$config = new Solution10\Config\Config('/var/www/app/config', 'sandbox');
+$files = $config->requiredFiles('routes');
+
+foreach ($files as $file) {
+    require_once $file;
+}
+```
+
+In the above example, $files is an array of full-paths to the .php files that Config loads
+when normally resolving via `get()`. So `$files` would contain:
+
+```php
+$files = [
+    '/var/www/app/config/routes.php',
+    '/var/www/app/config/sandbox/routes.php'
+];
+```
+
+Note that as with `get()`, the production config is loaded as well as the environment specific.
 
 ## Exceptions
 

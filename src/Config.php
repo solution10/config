@@ -25,7 +25,7 @@ class Config
     /**
      * @var     array   Cache for the loaded config
      */
-    protected $loaded = array();
+    protected $loaded = [];
 
     /**
      * Pass in the path to the config files top-level directory (ie app/config) and optionally
@@ -150,6 +150,32 @@ class Config
     }
 
     /**
+     * Finds the required files for a given 'namespace'. So if I ask for get('app.name')
+     * it would return the full paths to app.php in both the production and specified environments
+     * in an array.
+     *
+     * @param   string  $namespace
+     * @return  array
+     */
+    public function requiredFiles($namespace)
+    {
+        $basePath = $this->basePath().'/'.$namespace.'.php';
+        $overloadPath = $this->basePath().'/'.$this->environment.'/'.$namespace.'.php';
+
+        $files = [];
+
+        if (file_exists($basePath)) {
+            $files[] = realpath($basePath);
+        }
+
+        if (file_exists($overloadPath)) {
+            $files[] = realpath($overloadPath);
+        }
+
+        return $files;
+    }
+
+    /**
      * Load a file, including the environment config if present. If the file
      * does not exist, this won't throw, it'll just quietly insert null into
      * the array, preventing another load attempt.
@@ -159,21 +185,13 @@ class Config
      */
     protected function loadFile($file)
     {
-        $basePath = $this->basePath().'/'.$file.'.php';
-        $overloadPath = $this->basePath().'/'.$this->environment.'/'.$file.'.php';
+        $requiredFiles = $this->requiredFiles($file);
+        $loadedConfig = [];
 
-        $loadedConfig = array();
+        foreach ($requiredFiles as $fileToRequire) {
+            $overrideConfig = require $fileToRequire;
 
-        // Load the base config:
-        if (file_exists($basePath)) {
-            $loadedConfig = require $basePath;
-        }
-
-        // Now check for overrides config:
-        if ($this->environment() != 'production' && file_exists($overloadPath)) {
-            $overrideConfig = require $overloadPath;
-
-            // Now recursively overload:
+            // And recursively overwrite:
             $this->recursiveOverwrite($overrideConfig, $loadedConfig);
         }
 

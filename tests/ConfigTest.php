@@ -137,4 +137,40 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('Honda', $c->get('person.car.make'));
         $this->assertEquals('Civic', $c->get('person.car.model'));
     }
+
+    /*
+     * ------------------ Testing Required Files -------------------------
+     */
+
+    public function testRequiredFilesBothPresent()
+    {
+        $c = new Config(__DIR__.'/testconfig', 'development');
+        $files = $c->requiredFiles('person');
+        $this->assertCount(2, $files);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/person.php'), $files[0]);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/development/person.php'), $files[1]);
+    }
+
+    public function testRequiredFilesOnlyProduction()
+    {
+        $c = new Config(__DIR__.'/testconfig', 'development');
+        $files = $c->requiredFiles('pet');
+        $this->assertCount(1, $files);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/pet.php'), $files[0]);
+    }
+
+    public function testRequiredFilesOnlyEnvironment()
+    {
+        $c = new Config(__DIR__.'/testconfig', 'development');
+        $files = $c->requiredFiles('debugging');
+        $this->assertCount(1, $files);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/development/debugging.php'), $files[0]);
+    }
+
+    public function testRequiredFilesNeitherPresent()
+    {
+        $c = new Config(__DIR__.'/testconfig', 'development');
+        $files = $c->requiredFiles('building');
+        $this->assertCount(0, $files);
+    }
 }
