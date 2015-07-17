@@ -13,9 +13,9 @@ namespace Solution10\Config;
 class Config
 {
     /**
-     * @var     string  Path to the config files
+     * @var     string[]  Paths to the config files
      */
-    protected $configPath;
+    protected $configPaths;
 
     /**
      * @var     string  Environment folder. Defaults to "production" which is the top-level.
@@ -31,47 +31,61 @@ class Config
      * Pass in the path to the config files top-level directory (ie app/config) and optionally
      * an environment. Defaults to "production".
      *
-     * @param   string  $path           Path to the config files
-     * @param   string  $environment    Name of the environment to load for (null for 'production')
+     * @param   string|array    $path           Path (or an array of paths) to the base directories of the config files
+     * @param   string          $environment    Name of the environment to load for (null for 'production')
      * @throws  Exception
      */
     public function __construct($path, $environment = null)
     {
         $environment = ($environment === null)? 'production' : $environment;
 
-        $this->setBasePath($path);
+        $this->addBasePath($path);
         $this->setEnvironment($environment);
     }
 
     /**
-     * Sets the path to the config files. Note that this invalidates all loaded
-     * config so far, so if you've used values before changing this they might
-     * now be different. You've been warned!
+     * Adds a path to look in for config files. This should be the top level directory as this class
+     * will explore downwards for environment specific config.
      *
-     * @param   string  $path   Path to the config files
+     * @param   string|array  $path   Path (or paths) to the config files
      * @return  $this
      * @throws  Exception
      */
-    public function setBasePath($path)
+    public function addBasePath($path)
     {
-        if (!file_exists($path) || !is_dir($path) || !is_readable($path)) {
-            throw new Exception(
-                'Invalid or unreadable path: '.$path,
-                Exception::INVALID_PATH
-            );
+        $paths = (!is_array($path))? [$path] : $path;
+        foreach ($paths as $p) {
+            if (!file_exists($p) || !is_dir($p) || !is_readable($p)) {
+                throw new Exception(
+                    'Invalid or unreadable path: '.$p,
+                    Exception::INVALID_PATH
+                );
+            }
+            $this->configPaths[] = $p;
         }
-
-        $this->configPath = $path;
+        return $this;
     }
 
     /**
-     * Returns the config path we're using
+     * Returns only the first config path we're using. This is here for backwards compat only,
+     * you should migrate to using basePaths() instead.
      *
-     * @return  string
+     * @return  string|null
+     * @deprecated
      */
     public function basePath()
     {
-        return $this->configPath;
+        return (array_key_exists(0, $this->configPaths))? $this->configPaths[0] : null;
+    }
+
+    /**
+     * Returns all the config paths we're using
+     *
+     * @return  string[]
+     */
+    public function basePaths()
+    {
+        return $this->configPaths;
     }
 
     /**
@@ -106,7 +120,7 @@ class Config
      *
      * A key of person.bike.colour maps to $configPath/person.php['bike']['colour']
      *
-     * @param   string  $key    Key path (see above)
+     * @param   string  $key        Key path (see above)
      * @param   mixed   $default    Default value. Defaults to null.
      * @return  mixed
      */
@@ -159,19 +173,25 @@ class Config
      */
     public function requiredFiles($namespace)
     {
-        $basePath = $this->basePath().'/'.$namespace.'.php';
-        $overloadPath = $this->basePath().'/'.$this->environment.'/'.$namespace.'.php';
-
         $files = [];
 
-        if (file_exists($basePath)) {
-            $files[] = realpath($basePath);
+        // First loop is finding 'production' config for each basepath:
+        foreach ($this->configPaths as $basePath) {
+            $configFileCandidate = $basePath.'/'.$namespace.'.php';
+            if (file_exists($configFileCandidate)) {
+                $files[] = realpath($configFileCandidate);
+            }
         }
 
-        if (file_exists($overloadPath)) {
-            $files[] = realpath($overloadPath);
+        // Second loop is finding 'environment level' config for each basepath:
+        if ($this->environment !== 'production') {
+            foreach ($this->configPaths as $basePath) {
+                $envConfigFileCandidate = $basePath.'/'.$this->environment.'/'.$namespace.'.php';
+                if (file_exists($envConfigFileCandidate)) {
+                    $files[] = realpath($envConfigFileCandidate);
+                }
+            }
         }
-
         return $files;
     }
 

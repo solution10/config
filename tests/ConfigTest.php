@@ -173,4 +173,90 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $files = $c->requiredFiles('building');
         $this->assertCount(0, $files);
     }
+
+    /*
+     * -------------- Testing Multiple Basepaths ------------------
+     */
+
+    public function testRequiredFilesMultipleBasepaths()
+    {
+        $c = new Config([
+            __DIR__.'/testconfig',
+            __DIR__.'/testconfig2',
+        ], 'development');
+
+        $this->assertEquals([
+            realpath(__DIR__.'/testconfig/person.php'),
+            realpath(__DIR__.'/testconfig2/person.php'),
+            realpath(__DIR__.'/testconfig/development/person.php')
+        ], $c->requiredFiles('person'));
+    }
+
+    public function testMultipleBasepathsConstructor()
+    {
+        $c = new Config([
+            __DIR__.'/testconfig',
+            __DIR__.'/testconfig2',
+        ], 'development');
+
+        $this->assertEquals([
+            __DIR__.'/testconfig',
+            __DIR__.'/testconfig2',
+        ], $c->basePaths());
+
+        // Make sure we can load files from both locations:
+        $this->assertEquals('Hovercar', $c->get('car.make'));
+        $this->assertEquals(true, $c->get('debugging.enabled'));
+    }
+
+    public function testMultipleBasepathsAddingLater()
+    {
+        $c = new Config(__DIR__.'/testconfig', 'development');
+        $this->assertEquals($c, $c->addBasepath(__DIR__.'/testconfig2'));
+
+        $this->assertEquals([
+            __DIR__.'/testconfig',
+            __DIR__.'/testconfig2',
+        ], $c->basePaths());
+
+        // Make sure we can load files from both locations:
+        $this->assertEquals('Hovercar', $c->get('car.make'));
+        $this->assertEquals(true, $c->get('debugging.enabled'));
+    }
+
+    public function testOverwritingOrder()
+    {
+        // Basepaths are evaluated as 'last set, first read'. So we can overwrite from a later base path.
+        $c = new Config([
+            __DIR__.'/testconfig',
+            __DIR__.'/testconfig2',
+        ]);
+
+        // We should have overloaded the 'name' key from testconfig2/person.php but kept everything
+        // else from testconfig/person.php
+        $this->assertEquals('Alexander', $c->get('person.name'));
+        $this->assertEquals('orange', $c->get('person.bike.colour'));
+    }
+
+    public function testOverwritingBetweenEnvsAndBasepaths()
+    {
+        // Easily the most complex case, the overwrites look like this:
+        //
+        //  {basepath-1}/person -> sets 'name'
+        //  {basepath-2}/person -> overwrites 'name' (production always gets dibs)
+        //  {basepath-1}/{env}/person -> overwrites 'name' and other keys
+        //  {basepath-2}/{env}/person -> doesn't exist, no overwrite
+
+        $c = new Config([
+            __DIR__.'/testconfig',
+            __DIR__.'/testconfig2',
+        ], 'development');
+
+        // Name is overridden by everything
+        $this->assertEquals('Tuey', $c->get('person.name'));
+        // Job is only set in the development person config:
+        $this->assertEquals('Pilot', $c->get('person.job'));
+        // And the bike is only present in the first basepath person config:
+        $this->assertEquals('orange', $c->get('person.bike.colour'));
+    }
 }
