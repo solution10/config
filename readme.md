@@ -62,6 +62,10 @@ This will create an api/ folder for you to peruse.
 
 ## Changelog
 
+### 2.1.0
+
+- Added support for multiple config base paths. 
+
 ### 2.0.0
 
 - Added `requiredFiles()` API call

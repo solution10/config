@@ -1,6 +1,6 @@
 # Solution10\Config
 
-A super simple configuration loader / reader that focusses on being light and fast
+A super simple configuration loader / reader that focuses on being light and fast
 without losing required functionality.
 
 ## Contents
@@ -8,9 +8,11 @@ without losing required functionality.
 - [Installation](#installation)
 - [Config Format](#config-format)
 - [Config Locations](#config-locations)
+- [Multiple Config Locations](#multiple-config-locations)
 - [Reading Config](#reading-config)
     - [Overwriting](#overwriting)
     - [Default Values](#default-values)
+    - [Overwriting from multiple files](#overwriting-from-multiple-files)
 - [Requiring Config Files](#requiring-config-files)
 - [Exceptions](#exceptions)
 
@@ -21,7 +23,7 @@ Installation is via composer, either in composer.json:
 ```json
 {
     "require": {
-        "solution10/config": "~2.0"
+        "solution10/config": "~2.1"
     }
 }
 ```
@@ -81,6 +83,40 @@ So, if my config location is app/config, the directory would look like:
                 database.php
             staging/
                 database.php
+
+## Multiple Config Locations
+
+You can also configure several base directories where config should be read from. Each directory should follow the
+same structure as above; a top level with environment named folders beneath them. For example:
+
+```
+modules/
+    topics/
+        config/
+            topics.php
+            development/
+                topics.php
+    users/
+        config/
+            users.php
+            development/
+                users.php
+```
+
+To set up the two config roots (topics/config and users/config) you can either pass them into the constructor
+or add them later with `addBasePath()`:
+
+```php
+$c = new Solution10\Config\Config([
+    __DIR__.'/modules/topics/config',
+    __DIR__.'/modules/users/config'
+]);
+
+// OR
+
+$c = new Solution10\Config\Config(__DIR__.'/modules/topics/config');
+$c->addBasePath(__DIR__.'/modules/users/config');
+```
 
 ## Reading Config
 
@@ -174,6 +210,76 @@ provide a default value as the second parameter to get().
 $perPage = $config->get('app.paginate.perPage', 25);
 ```
 
+### Overwriting from multiple files
+
+So how does overwriting work when we have multiple files in multiple locations and environments? Let's look
+at a fairly complex, but representative example. Imagine our config files look like this:
+
+```php
+modules/
+    topics/
+        config/
+            app.php
+            development/
+                app.php
+    users/
+        config/
+            app.php
+            development/
+                app.php
+```
+
+If I ask for `$config->get('app.version');` just which of those four potential app.php files is going to get called?!
+
+The answer is simple; the same rules apply as a single config location (production overwritten by environment specific),
+but it'll apply all the production files from all locations first, before applying all the environment files.
+
+As to the order of those files - last defined = first read. It's a stack, rather than a queue.
+
+Too many words right? Here's a proper example, using the above file structure:
+
+```php
+$config = new Config([
+    __DIR__.'/modules/topics/config',
+    __DIR__.'/modules/users/config'
+]);
+```
+
+Since we're in production (no env specified) and we defined the `users/` locations **after** the `topics/` one, the
+order of overwrite is:
+
+```
+1. modules/topics/config/app.php
+2. modules/users/config/app.php
+```
+
+So values in users/config/app.php overwrite those of topics/config/app.php.
+
+If environments are involved like this:
+
+```php
+$config = new Config([
+    __DIR__.'/modules/topics/config',
+    __DIR__.'/modules/users/config'
+], 'development');
+```
+
+Then the files are visited and merged in this order:
+
+```
+Start with the 'production' layer of config, in the order the paths were added:
+1. modules/topics/config/app.php
+2. modules/users/config/app.php
+
+And then the 'environment' layer of config, again in the order that the paths were added:
+3. modules/topics/config/development/app.php
+4. modules/users/config/development/app.php
+```
+
+Hopefully the sheer number of words needed to describe this behaviour warns you off doing anything as complex
+or confusing as this! If you need to have every single config location and environment overriding the same file
+then I'd suggest you have something wrong with the structure of your app.
+
 ## Requiring Config Files
 
 Let's say you have a routes.php file which defines all of the routes for your application
@@ -213,6 +319,9 @@ $files = [
 ```
 
 Note that as with `get()`, the production config is loaded as well as the environment specific.
+
+This also works with multiple base config locations, you'll get the files in the order you would expect the config
+system would attempt to load them.
 
 ## Exceptions
 
