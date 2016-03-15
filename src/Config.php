@@ -227,7 +227,7 @@ class Config
     protected function recursiveOverwrite($source, &$dest)
     {
         foreach ($source as $key => $value) {
-            if (is_array($value) && array_key_exists($key, $dest)) {
+            if (is_array($value) && array_key_exists($key, $dest) && gettype($dest[$key]) === gettype($value)) {
                 // We need to merge a sub-array:
                 $this->recursiveOverwrite($value, $dest[$key]);
             } else {

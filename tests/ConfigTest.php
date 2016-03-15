@@ -138,6 +138,13 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('Civic', $c->get('person.car.model'));
     }
 
+    public function testOverridesChangeType()
+    {
+        $c = new Config(__DIR__.'/testconfig', 'development');
+        $value = $c->get('mixedtypes.key');
+        $this->assertEquals(['value1', 'value2'], $value);
+    }
+
     /*
      * ------------------ Testing Required Files -------------------------
      */
