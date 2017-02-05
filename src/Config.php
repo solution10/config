@@ -30,25 +30,13 @@ class Config
     protected $values = [];
 
     /**
-     * You can pass in an initial set of configuration here, or leave it blank.
+     * You can pass in an initial set of configuration paths here, or leave it blank.
      *
-     * @param   array       $initialConfig
+     * @param   array       $initialPaths
      */
-    public function __construct(array $initialConfig = [])
+    public function __construct(array $initialPaths = [])
     {
-        $this->addConfig($initialConfig);
-    }
-
-    /**
-     * Loads config into the working array.
-     *
-     * @param   array   $config
-     * @return  $this
-     */
-    public function addConfig(array $config)
-    {
-        $this->values = array_replace_recursive($this->values, $config);
-        return $this;
+        $this->addConfigPaths($initialPaths);
     }
 
     /**
@@ -143,7 +131,7 @@ class Config
         }
 
         // If we still don't have the file value, return default
-        if ($this->values[$file] === null) {
+        if (!array_key_exists($file, $this->values) || $this->values[$file] === null) {
             return $default;
         }
 
@@ -216,10 +204,9 @@ class Config
     {
         $requiredFiles = $this->getRequiredFiles($file);
 
-        $this->addConfig([$file => null]);
         foreach ($requiredFiles as $fileToRequire) {
             $overrideConfig = require $fileToRequire;
-            $this->addConfig([$file => $overrideConfig]);
+            $this->values = array_replace_recursive($this->values, [$file => $overrideConfig]);
         }
     }
 }

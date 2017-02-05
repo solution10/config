@@ -7,7 +7,7 @@ use Solution10\Config\Config;
 
 class ConfigTest extends PHPUnit_Framework_TestCase
 {
-    public function testConstructNoInitialConfig()
+    public function testConstructWithoutPaths()
     {
         $c = new Config();
         $this->assertNull($c->get('person'));
@@ -15,21 +15,20 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $this->assertNull($c->get('person.location.home'));
     }
 
-    public function testConstructWithInitialConfig()
+    public function testConstructWithPaths()
     {
         $c = new Config([
-            'person' => [
-                'name' => 'Alex',
-                'location' => [
-                    'home' => 'London'
-                ]
-            ]
+            __DIR__.'/testconfig'
         ]);
         $this->assertEquals([
             'name' => 'Alex',
+            'bike' => [
+                'colour' => 'orange',
+            ],
             'location' => [
-                'home' => 'London'
-            ]
+                'home' => 'London',
+                'work' => 'International Space Station',
+            ],
         ], $c->get('person'));
         $this->assertEquals('Alex', $c->get('person.name'));
         $this->assertEquals('London', $c->get('person.location.home'));

@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     'type' => 'dog',
     'name' => 'Poochie',
-);
+];

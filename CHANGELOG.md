@@ -4,17 +4,17 @@
 
 ### 3.0.0
 
+- **Config Class**
 - [BC Break] Updated to PHP 7.0 as base version
 - [BC Break] Added scalar type hints
 - [BC Break] Accessors follow more standard `setXXX` and `getXXX` pattern.
-- [BC Break] Refactored `__construct()` to accept an array of config rather than paths
-- Raw arrays can be passed into config
-- [BC Break] Config paths are now set in accessors rather that `__construct()`
+- [BC Break] Refactored `__construct()` to not require an environment
 - [BC Break] Config paths accessors changed:
     - `addBasePath` becomes `addConfigPath`
     - `basePaths` becomes `getConfigPaths`
 - [BC Break] Split `addConfigPath` into single (`addConfigPath`) and multi (`addConfigPaths`) setters.
 - Now uses `array_replace_recursive` rather than in-class replace.
+- Config paths are now optional in `__construct()`
 
 
 ## 2.x
