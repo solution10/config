@@ -1,7 +1,4 @@
-all: clean apidocs
 
-apidocs:
-	vendor/bin/apigen generate api/ src/
-
-clean:
-	rm -rf api/*
+ci:
+	php vendor/bin/phpunit -c phpunit.xml.dist --coverage-text
+	php vendor/bin/phpcs --standard=PSR2 ./src ./tests

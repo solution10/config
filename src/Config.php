@@ -8,74 +8,71 @@ namespace Solution10\Config;
  * Super simple config loader/reader class. Supports inheritance across environments,
  * but not at lot else as the aim is to be wicked fast and light.
  *
- * @package Solution10\Config
+ * @package     Solution10\Config
+ * @author      Alex Gisby<alex@solution10.com>
+ * @license     MIT
  */
 class Config
 {
     /**
      * @var     string[]  Paths to the config files
      */
-    protected $configPaths;
+    protected $configPaths = [];
 
     /**
      * @var     string  Environment folder. Defaults to "production" which is the top-level.
      */
-    protected $environment = "production";
+    protected $environment = 'production';
 
     /**
      * @var     array   Cache for the loaded config
      */
-    protected $loaded = [];
+    protected $values = [];
 
     /**
-     * Pass in the path to the config files top-level directory (ie app/config) and optionally
-     * an environment. Defaults to "production".
+     * You can pass in an initial set of configuration paths here, or leave it blank.
      *
-     * @param   string|array    $path           Path (or an array of paths) to the base directories of the config files
-     * @param   string          $environment    Name of the environment to load for (null for 'production')
-     * @throws  Exception
+     * @param   array       $initialPaths
      */
-    public function __construct($path, $environment = null)
+    public function __construct(array $initialPaths = [])
     {
-        $environment = ($environment === null)? 'production' : $environment;
-
-        $this->addBasePath($path);
-        $this->setEnvironment($environment);
+        $this->addConfigPaths($initialPaths);
     }
 
     /**
      * Adds a path to look in for config files. This should be the top level directory as this class
      * will explore downwards for environment specific config.
      *
-     * @param   string|array  $path   Path (or paths) to the config files
+     * @param   string  $path   Path to the config files
      * @return  $this
      * @throws  Exception
      */
-    public function addBasePath($path)
+    public function addConfigPath(string $path)
     {
-        $paths = (!is_array($path))? [$path] : $path;
-        foreach ($paths as $p) {
-            if (!file_exists($p) || !is_dir($p) || !is_readable($p)) {
-                throw new Exception(
-                    'Invalid or unreadable path: '.$p,
-                    Exception::INVALID_PATH
-                );
-            }
-            $this->configPaths[] = $p;
+        if (!file_exists($path) || !is_dir($path) || !is_readable($path)) {
+            throw new Exception(
+                'Invalid or unreadable path: '.$path,
+                Exception::INVALID_PATH
+            );
         }
+        $this->configPaths[] = $path;
+
         return $this;
     }
 
     /**
-     * Returns only the first config path we're using. This is here for backwards compat only,
-     * you should migrate to using basePaths() instead.
+     * Adds multiple paths to search for config in
      *
-     * @return  string|null
-     * @deprecated
+     * @param   array   $paths
+     * @return  $this
+     * @throws  Exception
      */
-    public function basePath()
+    public function addConfigPaths(array $paths)
     {
-        return (array_key_exists(0, $this->configPaths))? $this->configPaths[0] : null;
+        foreach ($paths as $p) {
+            $this->addConfigPath($p);
+        }
+        return $this;
     }
 
     /**
@@ -83,7 +80,7 @@ class Config
      *
      * @return  string[]
      */
-    public function basePaths()
+    public function getConfigPaths(): array
     {
         return $this->configPaths;
     }
@@ -96,7 +93,7 @@ class Config
      * @param   string  $environment
      * @return  $this
      */
-    public function setEnvironment($environment)
+    public function setEnvironment(string $environment)
     {
         $this->environment = $environment;
         return $this;
@@ -107,7 +104,7 @@ class Config
      *
      * @return  string
      */
-    public function environment()
+    public function getEnvironment(): string
     {
         return $this->environment;
     }
@@ -129,19 +126,19 @@ class Config
         // Grab the parts:
         $keyparts = explode('.', $key);
         $file = $keyparts[0];
-        if (!array_key_exists($file, $this->loaded)) {
+        if (!array_key_exists($file, $this->values)) {
             $this->loadFile($file);
         }
 
         // If we still don't have the file value, return default
-        if ($this->loaded[$file] === null) {
+        if (!array_key_exists($file, $this->values) || $this->values[$file] === null) {
             return $default;
         }
 
         // Now the tricky part, recursively read the path from the parts:
         $totalParts = count($keyparts);
         $i = 1;
-        $value = $this->loaded;
+        $value = $this->values;
         foreach ($keyparts as $part) {
             // If $value is not an array, but we have more parts, then
             // the key doesn't exist. Return default.
@@ -171,7 +168,7 @@ class Config
      * @param   string  $namespace
      * @return  array
      */
-    public function requiredFiles($namespace)
+    public function getRequiredFiles($namespace)
     {
         $files = [];
 
@@ -205,35 +202,11 @@ class Config
      */
     protected function loadFile($file)
     {
-        $requiredFiles = $this->requiredFiles($file);
-        $loadedConfig = [];
+        $requiredFiles = $this->getRequiredFiles($file);
 
         foreach ($requiredFiles as $fileToRequire) {
             $overrideConfig = require $fileToRequire;
-
-            // And recursively overwrite:
-            $this->recursiveOverwrite($overrideConfig, $loadedConfig);
-        }
-
-        $this->loaded[$file] = (!empty($loadedConfig))? $loadedConfig : null;
-    }
-
-    /**
-     * Recursively overwrites the values from $source into $dest
-     *
-     * @param   array   $source
-     * @param   &array  $dest
-     */
-    protected function recursiveOverwrite($source, &$dest)
-    {
-        foreach ($source as $key => $value) {
-            if (is_array($value) && array_key_exists($key, $dest) && gettype($dest[$key]) === gettype($value)) {
-                // We need to merge a sub-array:
-                $this->recursiveOverwrite($value, $dest[$key]);
-            } else {
-                // Overwrite/insert the key
-                $dest[$key] = $value;
-            }
+            $this->values = array_replace_recursive($this->values, [$file => $overrideConfig]);
         }
     }
 }
