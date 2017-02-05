@@ -6,7 +6,7 @@
 
 **`FilesystemConfig` Class**
 - [BC Break] Rename from `Solution10\Config\Config`
-- [BC Break] Updated to PHP 7.0 as base version
+- [BC Break] Updated to PHP 5.6 as base version
 - [BC Break] Added scalar type hints
 - [BC Break] Accessors follow more standard `setXXX` and `getXXX` pattern.
 - [BC Break] Refactored `__construct()` to not require an environment
@@ -31,7 +31,7 @@
 
 ### 2.1.0
 
-- **Last release supporting PHP 5.4 - 5.6**
+- **Last release supporting PHP 5.4 & 5.5**
 - Added support for multiple config base paths. 
 
 ### 2.0.0

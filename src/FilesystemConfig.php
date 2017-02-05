@@ -47,7 +47,7 @@ class FilesystemConfig implements ConfigInterface
      * @param   string $environment
      * @return  $this
      */
-    public function setEnvironment(string $environment)
+    public function setEnvironment($environment)
     {
         $this->config->setEnvironment($environment);
         return $this;
@@ -71,7 +71,7 @@ class FilesystemConfig implements ConfigInterface
      * @return  $this
      * @throws  Exception
      */
-    public function addConfigPath(string $path)
+    public function addConfigPath($path)
     {
         if (!file_exists($path) || !is_dir($path) || !is_readable($path)) {
             throw new Exception(
@@ -104,7 +104,7 @@ class FilesystemConfig implements ConfigInterface
      *
      * @return  string[]
      */
-    public function getConfigPaths(): array
+    public function getConfigPaths()
     {
         return $this->configPaths;
     }
@@ -121,7 +121,7 @@ class FilesystemConfig implements ConfigInterface
      * @param   mixed   $default    Default value. Defaults to null.
      * @return  mixed
      */
-    public function get(string $key, $default = null)
+    public function get($key, $default = null)
     {
         // Grab the parts:
         $keyparts = explode('.', $key);
@@ -141,7 +141,7 @@ class FilesystemConfig implements ConfigInterface
      * @param   string  $namespace
      * @return  array
      */
-    public function getRequiredFiles(string $namespace): array
+    public function getRequiredFiles($namespace)
     {
         $files = [];
 
@@ -179,7 +179,7 @@ class FilesystemConfig implements ConfigInterface
      * @param   string  $file   File to load
      * @return  void
      */
-    protected function loadFile(string $file)
+    protected function loadFile($file)
     {
         $requiredFiles = $this->getRequiredFiles($file);
         $this->values[$file] = true;

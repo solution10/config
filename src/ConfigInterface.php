@@ -21,7 +21,7 @@ interface ConfigInterface
      * @param   string  $environment
      * @return  $this
      */
-    public function setEnvironment(string $environment);
+    public function setEnvironment($environment);
 
     /**
      * Returns the environment that the config is using.
@@ -38,5 +38,5 @@ interface ConfigInterface
      * @param   mixed   $default
      * @return  mixed
      */
-    public function get(string $key, $default = null);
+    public function get($key, $default = null);
 }

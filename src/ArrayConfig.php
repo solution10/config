@@ -47,7 +47,7 @@ class ArrayConfig implements ConfigInterface
      * @param   string  $environment
      * @return  $this
      */
-    public function setEnvironment(string $environment)
+    public function setEnvironment($environment)
     {
         $this->buildCache = null;
         $this->environment = $environment;
@@ -71,7 +71,7 @@ class ArrayConfig implements ConfigInterface
      * @param   string  $environment
      * @return  $this
      */
-    public function addConfig(array $config, string $environment = null)
+    public function addConfig(array $config, $environment = null)
     {
         $env = ($environment)? $environment : '_top';
         $this->values[$env] = (array_key_exists($env, $this->values))?
@@ -85,7 +85,7 @@ class ArrayConfig implements ConfigInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $key, $default = null)
+    public function get($key, $default = null)
     {
         $keyParts = explode('.', $key);
 
@@ -111,7 +111,7 @@ class ArrayConfig implements ConfigInterface
      *
      * @return array
      */
-    protected function buildConfig(): array
+    protected function buildConfig()
     {
         if ($this->buildCache === null) {
             // Read the top config first:
