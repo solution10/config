@@ -1,13 +1,9 @@
-git:
-  submodules: false
-
 language: php
 
 php:
-  - 5.4
-  - 5.5
   - 5.6
   - 7
+  - 7.1
   - hhvm
 
 install:
@@ -15,9 +11,4 @@ install:
   - composer install
 
 script:
-  - mkdir -p build/logs
-  - php vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover build/logs/clover.xml
-  - php vendor/bin/phpcs --standard=PSR2 ./src ./tests
-
-after_script:
-  - php vendor/bin/coveralls
+  - make ci

@@ -6,49 +6,57 @@ without losing required functionality.
 ## Contents
 
 - [Installation](#installation)
-- [Config Format](#config-format)
-- [Config Locations](#config-locations)
-- [Multiple Config Locations](#multiple-config-locations)
-- [Reading Config](#reading-config)
-    - [Overwriting](#overwriting)
-    - [Default Values](#default-values)
-    - [Overwriting from multiple files](#overwriting-from-multiple-files)
-- [Requiring Config Files](#requiring-config-files)
+- [ConfigInterface](#configinterface)
+- [FilesystemConfig](#filesystemconfig)
+    - [Config Format](#config-format)
+    - [Config Locations](#config-locations)
+    - [Multiple Config Locations](#multiple-config-locations)
+    - [Reading Config](#reading-config)
+        - [Overwriting](#overwriting)
+        - [Default Values](#default-values)
+        - [Overwriting from multiple files](#overwriting-from-multiple-files)
+    - [Requiring Config Files](#requiring-config-files)
+- [ArrayConfig](#arrayconfig)
 - [Exceptions](#exceptions)
 
 ## Installation
 
-Installation is via composer, either in composer.json:
-
-```json
-{
-    "require": {
-        "solution10/config": "~2.1"
-    }
-}
-```
-
-Or even better, through the command line
+Installation is via composer:
 
 ```sh
 $ composer require solution10/config
 ```
 
-## Config Format
+## ConfigInterface
+
+There are two Config systems contained within `Solution10\Config` - one which deals with reading configuration
+from files on the filesystem, and one which allows you to simply pass in arrays of config to be read back out.
+
+The `Solution10\Config\ConfigInterface` defines an interface between the two which should allow you to use them
+fairly interchangeably, for instance, in unit tests you may prefer to use `ArrayConfig` since it doesn't require
+any special files or paths.
+
+## FilesystemConfig
+
+This class is the 'classic' way of doing config using `Solution10\Config` using .php files within
+directories to specify config. If in pre-3.0 versions you used `Solution10\Config\Config` then use
+this class.
+
+### Config Format
 
 Configuration files are in PHP format and simply return an array:
 
 ```php
 <?php
 
-return array(
+return [
     'posts_per_page' => 20,
-    'cache' => array(
+    'cache' => [
         'latest_posts' => 30,
         'popular_posts' => 60,
-    ),
+    ],
     'api_key' => 'fhsdfkh7883475345',
-);
+];
 ```
 
 Being PHP files, you can use anything as config values and even have dynamically
@@ -57,17 +65,17 @@ generated config values:
 ```php
 <?php
 
-return array(
-    'mysql' => array(
+return [
+    'mysql' => [
         'host' => $_SERVER['MYSQL_HOST'],
         'username' => getenv('db_username'),
         'password' => getenv('db_password'),
         'database' => (date('l') == 'Monday')? 'monday_database' : 'other_database',
-    ),
-);
+    ],
+];
 ```
 
-## Config Locations
+### Config Locations
 
 You can put your config files anywhere, but the folder structure is important. The top-level
 of your config location is "production", this is where you put your live config values. You
@@ -84,7 +92,7 @@ So, if my config location is app/config, the directory would look like:
             staging/
                 database.php
 
-## Multiple Config Locations
+### Multiple Config Locations
 
 You can also configure several base directories where config should be read from. Each directory should follow the
 same structure as above; a top level with environment named folders beneath them. For example:
@@ -104,26 +112,26 @@ modules/
 ```
 
 To set up the two config roots (topics/config and users/config) you can either pass them into the constructor
-or add them later with `addBasePath()`:
+or add them later with `addConfigPath()`:
 
 ```php
-$c = new Solution10\Config\Config([
+$c = new Solution10\Config\FilesystemConfig([
     __DIR__.'/modules/topics/config',
     __DIR__.'/modules/users/config'
 ]);
 
 // OR
 
-$c = new Solution10\Config\Config(__DIR__.'/modules/topics/config');
-$c->addBasePath(__DIR__.'/modules/users/config');
+$c = new Solution10\Config\FilesystemConfig([__DIR__.'/modules/topics/config']);
+$c->addConfigPath(__DIR__.'/modules/users/config');
 ```
 
-## Reading Config
+### Reading Config
 
 So we now have our config files setup, how do we read them? Easy:
 
 ```php
-$config = new Solution10\Config\Config('/var/www/app/config');
+$config = new Solution10\Config\FilesystemConfig(['/var/www/app/config']);
 
 echo $config->get('database.mysql.host');
 // This translates to: app/config/database.php['mysql']['host']
@@ -132,8 +140,8 @@ echo $config->get('database.mysql.host');
 How about if config is for another environment?
 
 ```php
-// Pass in the second parameter to say which environment:
-$config = new Solution10\Config\Config('/var/www/app/config', 'sandbox');
+$config = new Solution10\Config\FilesystemConfig(['/var/www/app/config']);
+$config->setEnvironment('sandbox');
 
 echo $config->get('database.mysql.host');
 // translates to: app/config/sandbox/database.php['mysql']['host']
@@ -155,7 +163,7 @@ echo $config->get('app.paginate.perPage'); // output: 25
 $paginate = $config->get('app.paginate'); // returns: array('perPage' => 25, 'queryParam' => 'page')
 ```
 
-### Overwriting
+#### Overwriting
 
 Except dear friends, I'm afraid I lied. It's not quite as simple as that.
 When you load an environment other than "production", the "production" config
@@ -185,7 +193,7 @@ return array(
 );
 ```
 
-These two config files are merged together, so that what Config reports is:
+These two config files are merged together, so that what FilesystemConfig reports is:
 
 ```php
 return array(
@@ -201,7 +209,7 @@ return array(
 If you've ever used ini file "groups" before, or Laravel's config system this should
 feel familiar.
 
-### Default Values
+#### Default Values
 
 If you know a value might not be present in config but still want to try, you can
 provide a default value as the second parameter to get().
@@ -210,7 +218,7 @@ provide a default value as the second parameter to get().
 $perPage = $config->get('app.paginate.perPage', 25);
 ```
 
-### Overwriting from multiple files
+#### Overwriting from multiple files
 
 So how does overwriting work when we have multiple files in multiple locations and environments? Let's look
 at a fairly complex, but representative example. Imagine our config files look like this:
@@ -239,7 +247,7 @@ As to the order of those files - last defined = first read. It's a stack, rather
 Too many words right? Here's a proper example, using the above file structure:
 
 ```php
-$config = new Config([
+$config = new FilesystemConfig([
     __DIR__.'/modules/topics/config',
     __DIR__.'/modules/users/config'
 ]);
@@ -258,7 +266,7 @@ So values in users/config/app.php overwrite those of topics/config/app.php.
 If environments are involved like this:
 
 ```php
-$config = new Config([
+$config = new FilesystemConfig([
     __DIR__.'/modules/topics/config',
     __DIR__.'/modules/users/config'
 ], 'development');
@@ -280,7 +288,7 @@ Hopefully the sheer number of words needed to describe this behaviour warns you 
 or confusing as this! If you need to have every single config location and environment overriding the same file
 then I'd suggest you have something wrong with the structure of your app.
 
-## Requiring Config Files
+### Requiring FilesystemConfig Files
 
 Let's say you have a routes.php file which defines all of the routes for your application
 in a Silex-y way:
@@ -292,23 +300,24 @@ $app->get('/', function () {
 ```
 
 This is clearly config, but needs to be 'required' in the global scope rather than local
-to the Config class.
+to the FilesystemConfig class.
 
 You may also want to load different routes based on environment, for example, a debugging
 route on all environments other than production.
 
-Starting with Version 2, Solution10\Config supports this.
+Starting with Version 2, Solution10\FilesystemConfig supports this.
 
 ```php
-$config = new Solution10\Config\Config('/var/www/app/config', 'sandbox');
-$files = $config->requiredFiles('routes');
+$config = new Solution10\Config\FilesystemConfig(['/var/www/app/config']);
+$config->setEnvironment('sandbox');
+$files = $config->getRequiredFiles('routes');
 
 foreach ($files as $file) {
     require_once $file;
 }
 ```
 
-In the above example, $files is an array of full-paths to the .php files that Config loads
+In the above example, $files is an array of full-paths to the .php files that FilesystemConfig loads
 when normally resolving via `get()`. So `$files` would contain:
 
 ```php
@@ -323,7 +332,50 @@ Note that as with `get()`, the production config is loaded as well as the enviro
 This also works with multiple base config locations, you'll get the files in the order you would expect the config
 system would attempt to load them.
 
+## ArrayConfig
+
+Internally, the `FilesystemConfig` class is actually using an instance of `ArrayConfig` to manage the values read
+from the files.
+
+You can use this class directly if you simply want to hard-set the config at runtime (for instance, in unit tests).
+
+```php
+<?php
+
+// The constructor can optionally take some production config:
+$c = new \Solution10\Config\ArrayConfig([
+    'mysql' => [
+        'host' => 'localhost',
+        'port' => '3332'
+    ]
+]);
+
+// You can then add additional config (including per-environment) using:
+$c->addConfig([
+    'mysql' => [
+        'user' => 'live',
+        'pass' => 'very-secure-password'        
+    ]
+]);
+
+$c->addConfig([
+    'mysql' => [
+        'user' => 'local',
+        'pass' => 'secure-password'        
+    ]
+], 'development'); // pass the env as second parameter.
+
+// Set the environment and begin reading config:
+$c->setEnvironment(getenv('MY_APP_ENV'));
+
+$mysql = $c->get('mysql');
+
+```
+
+All of the overriding behaviour you've come to know and love from `FilesystemConfig` will work here, use it
+as if you were using the files.
+
 ## Exceptions
 
-Config throws a single Exception (`Solution10\Config\Exception`) when you give a path
+FilesystemConfig throws a single Exception (`Solution10\FilesystemConfig\Exception`) when you give a path
 to the constructor that either doesn't exist, or cannot be read.

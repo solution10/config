@@ -11,10 +11,11 @@
         }
     ],
     "require": {
-        "php": ">= 5.4"
+        "php": ">=5.6"
     },
     "require-dev": {
-        "solution10/devkit": "~1.0"
+        "phpunit/phpunit": "^5.0",
+        "squizlabs/php_codesniffer": "^2.7"
     },
     "autoload": {
         "psr-4": {

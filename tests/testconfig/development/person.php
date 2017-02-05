@@ -1,13 +1,13 @@
 <?php
 
-return array(
+return [
     'name' => 'Tuey',
-    'location' => array(
+    'location' => [
         'home' => 'Roseville, CA',
-    ),
-    'car' => array(
+    ],
+    'car' => [
         'make' => 'Honda',
         'model' => 'Civic',
-    ),
+    ],
     'job' => 'Pilot',
-);
+];

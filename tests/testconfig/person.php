@@ -1,12 +1,12 @@
 <?php
 
-return array(
+return [
     'name' => 'Alex',
-    'bike' => array(
+    'bike' => [
         'colour' => 'orange',
-    ),
-    'location' => array(
+    ],
+    'location' => [
         'home' => 'London',
         'work' => 'International Space Station',
-    ),
-);
+    ],
+];

@@ -12,7 +12,7 @@
     verbose="false">
 
     <testsuites>
-        <testsuite name="Config Tests">
+        <testsuite name="FilesystemConfig Tests">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>

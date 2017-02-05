@@ -1,4 +1,4 @@
-# Solution10\Config
+# Solution10\FilesystemConfig
 
 This is a tiny, lightning fast way of defining configuration for your app.
 
@@ -6,8 +6,6 @@ This is deliberately bare-bones and not swamped with options / parsers. The focu
 on speed and lightness, whilst still retaining vital features.
 
 [![Build Status](https://travis-ci.org/Solution10/config.svg?branch=master)](https://travis-ci.org/Solution10/config)
-[![Coverage Status](https://coveralls.io/repos/Solution10/config/badge.png)](https://coveralls.io/r/Solution10/config)
-
 [![Latest Stable Version](https://poser.pugx.org/solution10/config/v/stable.svg)](https://packagist.org/packages/solution10/config)
 [![Total Downloads](https://poser.pugx.org/solution10/config/downloads.svg)](https://packagist.org/packages/solution10/config)
 [![License](https://poser.pugx.org/solution10/config/license.svg)](https://packagist.org/packages/solution10/config)
@@ -16,16 +14,14 @@ on speed and lightness, whilst still retaining vital features.
 - [Installation](#installation)
 - [Documentation](#documentation)
     - [Userguide](#userguide)
-    - [API Docs](#api-docs)
 - [PHP Requirements](#php-requirements)
-- [Changelog](#changelog)
 - [Author](#author)
 - [License](#license)
 
 ## Features
 
 - No dependencies
-- PHP 5.4+ (including PHP 7 and HHVM)
+- PHP 5.6, 7.0, 7.1 and HHVM support
 - Lightning fast
 - Extremely light
 - Inheritance; define a base config and override per-environment
@@ -40,51 +36,13 @@ $ composer require solution10/config
 
 ## Documentation
 
-### Userguide
-
-[Check out the Wiki](https://github.com/Solution10/config/wiki)
-
-(or the /docs folder in the repo)
-
-### API Docs
-
-From a checkout of this project, run:
-
-    $ make apidocs
-
-This will create an api/ folder for you to peruse.
+Check out the docs/ folder in the repo.
 
 ## PHP Requirements
 
-- PHP >= 5.4
-
-(If you require 5.3 support, versions up to 1.2.0 supported 5.3, so pin to that version)
-
-## Changelog
-
-### 2.1.0
-
-- Added support for multiple config base paths. 
-
-### 2.0.0
-
-- Added `requiredFiles()` API call
-- Removed PHP 5.3 support
-- Added PHP 7 into build matrix
-- Removed HHVM from allowed fails
-
-### 1.2.0
-
-- **Last release supporting PHP 5.3**
-- Passing 'null' to construct now assumes production
-
-### 1.1.0
-
-- Migrating to PSR4
-
-### 1.0.0
-
-- Initial version
+- PHP >= 5.6
+    - (If you require 5.3 support, versions up to 1.2.0 supported 5.3)
+    - (if you require < 5.6 support, versions up to 2.1 supported 5.4 & 5.5)
 
 ## Author
 
