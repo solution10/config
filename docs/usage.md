@@ -332,6 +332,49 @@ Note that as with `get()`, the production config is loaded as well as the enviro
 This also works with multiple base config locations, you'll get the files in the order you would expect the config
 system would attempt to load them.
 
+## ArrayConfig
+
+Internally, the `FilesystemConfig` class is actually using an instance of `ArrayConfig` to manage the values read
+from the files.
+
+You can use this class directly if you simply want to hard-set the config at runtime (for instance, in unit tests).
+
+```php
+<?php
+
+// The constructor can optionally take some production config:
+$c = new \Solution10\Config\ArrayConfig([
+    'mysql' => [
+        'host' => 'localhost',
+        'port' => '3332'
+    ]
+]);
+
+// You can then add additional config (including per-environment) using:
+$c->addConfig([
+    'mysql' => [
+        'user' => 'live',
+        'pass' => 'very-secure-password'        
+    ]
+]);
+
+$c->addConfig([
+    'mysql' => [
+        'user' => 'local',
+        'pass' => 'secure-password'        
+    ]
+], 'development'); // pass the env as second parameter.
+
+// Set the environment and begin reading config:
+$c->setEnvironment(getenv('MY_APP_ENV'));
+
+$mysql = $c->get('mysql');
+
+```
+
+All of the overriding behaviour you've come to know and love from `FilesystemConfig` will work here, use it
+as if you were using the files.
+
 ## Exceptions
 
 FilesystemConfig throws a single Exception (`Solution10\FilesystemConfig\Exception`) when you give a path
