@@ -43,6 +43,14 @@ class FilesystemConfigTest extends TestCase
         new FilesystemConfig([__DIR__.'/unknown']);
     }
 
+    public function testSetGetEnvironment()
+    {
+        $c = new FilesystemConfig();
+        $this->assertEquals('production', $c->getEnvironment());
+        $this->assertEquals($c, $c->setEnvironment('development'));
+        $this->assertEquals('development', $c->getEnvironment());
+    }
+
     /*
      * ------------- Testing Basic Getting FilesystemConfig -----------------
      */
@@ -189,8 +197,8 @@ class FilesystemConfigTest extends TestCase
         $c->addConfigPath(__DIR__.'/testconfig');
         $files = $c->getRequiredFiles('person');
         $this->assertCount(2, $files);
-        $this->assertEquals(realpath(__DIR__.'/testconfig/person.php'), $files[0]);
-        $this->assertEquals(realpath(__DIR__.'/testconfig/development/person.php'), $files[1]);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/person.php'), $files[0]['path']);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/development/person.php'), $files[1]['path']);
     }
 
     public function testRequiredFilesOnlyProduction()
@@ -200,7 +208,7 @@ class FilesystemConfigTest extends TestCase
         $c->addConfigPath(__DIR__.'/testconfig');
         $files = $c->getRequiredFiles('pet');
         $this->assertCount(1, $files);
-        $this->assertEquals(realpath(__DIR__.'/testconfig/pet.php'), $files[0]);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/pet.php'), $files[0]['path']);
     }
 
     public function testRequiredFilesOnlyEnvironment()
@@ -210,7 +218,7 @@ class FilesystemConfigTest extends TestCase
         $c->addConfigPath(__DIR__.'/testconfig');
         $files = $c->getRequiredFiles('debugging');
         $this->assertCount(1, $files);
-        $this->assertEquals(realpath(__DIR__.'/testconfig/development/debugging.php'), $files[0]);
+        $this->assertEquals(realpath(__DIR__.'/testconfig/development/debugging.php'), $files[0]['path']);
     }
 
     public function testRequiredFilesNeitherPresent()
@@ -236,9 +244,9 @@ class FilesystemConfigTest extends TestCase
             ]);
 
         $this->assertEquals([
-            realpath(__DIR__.'/testconfig/person.php'),
-            realpath(__DIR__.'/testconfig2/person.php'),
-            realpath(__DIR__.'/testconfig/development/person.php')
+            ['path' => realpath(__DIR__.'/testconfig/person.php'), 'environment' => null],
+            ['path' => realpath(__DIR__.'/testconfig2/person.php'), 'environment' => null],
+            ['path' => realpath(__DIR__.'/testconfig/development/person.php'), 'environment' => 'development'],
         ], $c->getRequiredFiles('person'));
     }
 

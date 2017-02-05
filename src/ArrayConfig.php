@@ -2,9 +2,6 @@
 
 namespace Solution10\Config;
 
-use Solution10\Config\Common\Environment;
-use Solution10\Config\Common\RecursiveRead;
-
 /**
  * Class ArrayConfig
  *
@@ -17,20 +14,15 @@ use Solution10\Config\Common\RecursiveRead;
  */
 class ArrayConfig implements ConfigInterface
 {
-    use Environment {
-        setEnvironment as traitSetEnvironment;
-    }
-    use RecursiveRead;
+    /**
+     * @var     string
+     */
+    protected $environment = 'production';
 
     /**
      * @var     array
      */
     protected $values = ['_top' => []];
-
-    /**
-     * @var     bool
-     */
-    protected $needsRebuild = false;
 
     /**
      * @var     array
@@ -52,13 +44,24 @@ class ArrayConfig implements ConfigInterface
      * config so far, so if you've used values before changing this they might
      * now be different. You've been warned!
      *
-     * @param   string $environment
+     * @param   string  $environment
      * @return  $this
      */
     public function setEnvironment(string $environment)
     {
         $this->buildCache = null;
-        return $this->traitSetEnvironment($environment);
+        $this->environment = $environment;
+        return $this;
+    }
+
+    /**
+     * Returns the environment that the config is using.
+     *
+     * @return  string
+     */
+    public function getEnvironment(): string
+    {
+        return $this->environment;
     }
 
     /**
@@ -84,8 +87,22 @@ class ArrayConfig implements ConfigInterface
      */
     public function get(string $key, $default = null)
     {
-        $built = $this->buildConfig();
-        return $this->recursiveRead($key, $built, $default);
+        $keyParts = explode('.', $key);
+
+        $i = 1;
+        $value = $this->buildConfig();
+        foreach ($keyParts as $part) {
+            // Otherwise, set the value:
+            if (is_array($value) && array_key_exists($part, $value)) {
+                $value = $value[$part];
+            } else {
+                $value = $default;
+                break;
+            }
+            $i ++;
+        }
+
+        return $value;
     }
 
     /**
