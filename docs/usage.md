@@ -18,17 +18,7 @@ without losing required functionality.
 
 ## Installation
 
-Installation is via composer, either in composer.json:
-
-```json
-{
-    "require": {
-        "solution10/config": "~2.1"
-    }
-}
-```
-
-Or even better, through the command line
+Installation is via composer:
 
 ```sh
 $ composer require solution10/config
@@ -41,14 +31,14 @@ Configuration files are in PHP format and simply return an array:
 ```php
 <?php
 
-return array(
+return [
     'posts_per_page' => 20,
-    'cache' => array(
+    'cache' => [
         'latest_posts' => 30,
         'popular_posts' => 60,
-    ),
+    ],
     'api_key' => 'fhsdfkh7883475345',
-);
+];
 ```
 
 Being PHP files, you can use anything as config values and even have dynamically
@@ -57,14 +47,14 @@ generated config values:
 ```php
 <?php
 
-return array(
-    'mysql' => array(
+return [
+    'mysql' => [
         'host' => $_SERVER['MYSQL_HOST'],
         'username' => getenv('db_username'),
         'password' => getenv('db_password'),
         'database' => (date('l') == 'Monday')? 'monday_database' : 'other_database',
-    ),
-);
+    ],
+];
 ```
 
 ## Config Locations
@@ -104,7 +94,7 @@ modules/
 ```
 
 To set up the two config roots (topics/config and users/config) you can either pass them into the constructor
-or add them later with `addBasePath()`:
+or add them later with `addConfigPath()`:
 
 ```php
 $c = new Solution10\Config\Config([
@@ -114,8 +104,8 @@ $c = new Solution10\Config\Config([
 
 // OR
 
-$c = new Solution10\Config\Config(__DIR__.'/modules/topics/config');
-$c->addBasePath(__DIR__.'/modules/users/config');
+$c = new Solution10\Config\Config([__DIR__.'/modules/topics/config']);
+$c->addConfigPath(__DIR__.'/modules/users/config');
 ```
 
 ## Reading Config
@@ -123,7 +113,7 @@ $c->addBasePath(__DIR__.'/modules/users/config');
 So we now have our config files setup, how do we read them? Easy:
 
 ```php
-$config = new Solution10\Config\Config('/var/www/app/config');
+$config = new Solution10\Config\Config(['/var/www/app/config']);
 
 echo $config->get('database.mysql.host');
 // This translates to: app/config/database.php['mysql']['host']
@@ -132,8 +122,8 @@ echo $config->get('database.mysql.host');
 How about if config is for another environment?
 
 ```php
-// Pass in the second parameter to say which environment:
-$config = new Solution10\Config\Config('/var/www/app/config', 'sandbox');
+$config = new Solution10\Config\Config(['/var/www/app/config']);
+$config->setEnvironment('sandbox');
 
 echo $config->get('database.mysql.host');
 // translates to: app/config/sandbox/database.php['mysql']['host']
@@ -300,8 +290,9 @@ route on all environments other than production.
 Starting with Version 2, Solution10\Config supports this.
 
 ```php
-$config = new Solution10\Config\Config('/var/www/app/config', 'sandbox');
-$files = $config->requiredFiles('routes');
+$config = new Solution10\Config\Config(['/var/www/app/config']);
+$config->setEnvironment('sandbox');
+$files = $config->getRequiredFiles('routes');
 
 foreach ($files as $file) {
     require_once $file;
