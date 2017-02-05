@@ -4,8 +4,9 @@
 
 ### 3.0.0
 
-- **Config Class**
-- [BC Break] Updated to PHP 7.0 as base version
+**`FilesystemConfig` Class**
+- [BC Break] Rename from `Solution10\Config\Config`
+- [BC Break] Updated to PHP 5.6 as base version
 - [BC Break] Added scalar type hints
 - [BC Break] Accessors follow more standard `setXXX` and `getXXX` pattern.
 - [BC Break] Refactored `__construct()` to not require an environment
@@ -13,9 +14,16 @@
     - `addBasePath` becomes `addConfigPath`
     - `basePaths` becomes `getConfigPaths`
 - [BC Break] Split `addConfigPath` into single (`addConfigPath`) and multi (`addConfigPaths`) setters.
+- [BC Break] Removal of 'production' magic word. `null` indicates 'top' level directory environment
 - Now uses `array_replace_recursive` rather than in-class replace.
 - Config paths are now optional in `__construct()`
+- Makes use of `ArrayConfig` internally
 
+**`ArrayConfig` Class**
+- New Class for managing simple arrays of config
+
+**`ConfigInterface` Interface**
+- New Interface for tying together `FilesystemConfig` and `ArrayConfig` commonality.
 
 ## 2.x
 
@@ -23,7 +31,7 @@
 
 ### 2.1.0
 
-- **Last release supporting PHP 5.4 - 5.6**
+- **Last release supporting PHP 5.4 & 5.5**
 - Added support for multiple config base paths. 
 
 ### 2.0.0

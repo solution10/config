@@ -1,4 +1,4 @@
-# Solution10\Config
+# Solution10\FilesystemConfig
 
 This is a tiny, lightning fast way of defining configuration for your app.
 

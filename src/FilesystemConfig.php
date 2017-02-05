@@ -3,16 +3,15 @@
 namespace Solution10\Config;
 
 /**
- * Class Config
+ * Class FilesystemConfig
  *
- * Super simple config loader/reader class. Supports inheritance across environments,
- * but not at lot else as the aim is to be wicked fast and light.
+ * Used for reading arrays of config from the filesystem.
  *
  * @package     Solution10\Config
  * @author      Alex Gisby<alex@solution10.com>
  * @license     MIT
  */
-class Config
+class FilesystemConfig implements ConfigInterface
 {
     /**
      * @var     string[]  Paths to the config files
@@ -20,14 +19,14 @@ class Config
     protected $configPaths = [];
 
     /**
-     * @var     string  Environment folder. Defaults to "production" which is the top-level.
-     */
-    protected $environment = 'production';
-
-    /**
      * @var     array   Cache for the loaded config
      */
     protected $values = [];
+
+    /**
+     * @var     ArrayConfig
+     */
+    protected $config;
 
     /**
      * You can pass in an initial set of configuration paths here, or leave it blank.
@@ -37,6 +36,31 @@ class Config
     public function __construct(array $initialPaths = [])
     {
         $this->addConfigPaths($initialPaths);
+        $this->config = new ArrayConfig();
+    }
+
+    /**
+     * Setting the environment to read from. Note that this invalidates all loaded
+     * config so far, so if you've used values before changing this they might
+     * now be different. You've been warned!
+     *
+     * @param   string $environment
+     * @return  $this
+     */
+    public function setEnvironment($environment)
+    {
+        $this->config->setEnvironment($environment);
+        return $this;
+    }
+
+    /**
+     * Returns the environment that the config is using.
+     *
+     * @return  string|null
+     */
+    public function getEnvironment()
+    {
+        return $this->config->getEnvironment();
     }
 
     /**
@@ -47,7 +71,7 @@ class Config
      * @return  $this
      * @throws  Exception
      */
-    public function addConfigPath(string $path)
+    public function addConfigPath($path)
     {
         if (!file_exists($path) || !is_dir($path) || !is_readable($path)) {
             throw new Exception(
@@ -80,33 +104,9 @@ class Config
      *
      * @return  string[]
      */
-    public function getConfigPaths(): array
+    public function getConfigPaths()
     {
         return $this->configPaths;
-    }
-
-    /**
-     * Setting the environment to read from. Note that this invalidates all loaded
-     * config so far, so if you've used values before changing this they might
-     * now be different. You've been warned!
-     *
-     * @param   string  $environment
-     * @return  $this
-     */
-    public function setEnvironment(string $environment)
-    {
-        $this->environment = $environment;
-        return $this;
-    }
-
-    /**
-     * Returns the environment that the config is using.
-     *
-     * @return  string
-     */
-    public function getEnvironment(): string
-    {
-        return $this->environment;
     }
 
     /**
@@ -130,34 +130,7 @@ class Config
             $this->loadFile($file);
         }
 
-        // If we still don't have the file value, return default
-        if (!array_key_exists($file, $this->values) || $this->values[$file] === null) {
-            return $default;
-        }
-
-        // Now the tricky part, recursively read the path from the parts:
-        $totalParts = count($keyparts);
-        $i = 1;
-        $value = $this->values;
-        foreach ($keyparts as $part) {
-            // If $value is not an array, but we have more parts, then
-            // the key doesn't exist. Return default.
-            if (!is_array($value) && $i != $totalParts) {
-                $value = $default;
-                break;
-            }
-
-            // Otherwise, set the value:
-            if (is_array($value) && array_key_exists($part, $value)) {
-                $value = $value[$part];
-            } else {
-                $value = $default;
-                break;
-            }
-            $i ++;
-        }
-
-        return $value;
+        return $this->config->get($key, $default);
     }
 
     /**
@@ -176,16 +149,22 @@ class Config
         foreach ($this->configPaths as $basePath) {
             $configFileCandidate = $basePath.'/'.$namespace.'.php';
             if (file_exists($configFileCandidate)) {
-                $files[] = realpath($configFileCandidate);
+                $files[] = [
+                    'path' => realpath($configFileCandidate),
+                    'environment' => null
+                ];
             }
         }
 
         // Second loop is finding 'environment level' config for each basepath:
-        if ($this->environment !== 'production') {
+        if ($this->config->getEnvironment() !== null) {
             foreach ($this->configPaths as $basePath) {
-                $envConfigFileCandidate = $basePath.'/'.$this->environment.'/'.$namespace.'.php';
+                $envConfigFileCandidate = $basePath.'/'.$this->config->getEnvironment().'/'.$namespace.'.php';
                 if (file_exists($envConfigFileCandidate)) {
-                    $files[] = realpath($envConfigFileCandidate);
+                    $files[] = [
+                        'path' => realpath($envConfigFileCandidate),
+                        'environment' => $this->config->getEnvironment()
+                    ];
                 }
             }
         }
@@ -203,10 +182,11 @@ class Config
     protected function loadFile($file)
     {
         $requiredFiles = $this->getRequiredFiles($file);
+        $this->values[$file] = true;
 
         foreach ($requiredFiles as $fileToRequire) {
-            $overrideConfig = require $fileToRequire;
-            $this->values = array_replace_recursive($this->values, [$file => $overrideConfig]);
+            $overrideConfig = require $fileToRequire['path'];
+            $this->config->addConfig([$file => $overrideConfig], $fileToRequire['environment']);
         }
     }
 }
