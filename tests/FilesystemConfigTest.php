@@ -46,7 +46,7 @@ class FilesystemConfigTest extends TestCase
     public function testSetGetEnvironment()
     {
         $c = new FilesystemConfig();
-        $this->assertEquals('production', $c->getEnvironment());
+        $this->assertNull($c->getEnvironment());
         $this->assertEquals($c, $c->setEnvironment('development'));
         $this->assertEquals('development', $c->getEnvironment());
     }

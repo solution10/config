@@ -14,8 +14,10 @@
     - `addBasePath` becomes `addConfigPath`
     - `basePaths` becomes `getConfigPaths`
 - [BC Break] Split `addConfigPath` into single (`addConfigPath`) and multi (`addConfigPaths`) setters.
+- [BC Break] Removal of 'production' magic word. `null` indicates 'top' level directory environment
 - Now uses `array_replace_recursive` rather than in-class replace.
 - Config paths are now optional in `__construct()`
+- Makes use of `ArrayConfig` internally
 
 **`ArrayConfig` Class**
 - New Class for managing simple arrays of config

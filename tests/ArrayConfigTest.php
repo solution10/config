@@ -7,6 +7,14 @@ use Solution10\Config\ArrayConfig;
 
 class ArrayConfigTest extends TestCase
 {
+    public function testSetGetEnvironment()
+    {
+        $c = new ArrayConfig();
+        $this->assertNull($c->getEnvironment());
+        $this->assertEquals($c, $c->setEnvironment('development'));
+        $this->assertEquals('development', $c->getEnvironment());
+    }
+
     public function testSimpleGet()
     {
         $c = new ArrayConfig([

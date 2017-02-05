@@ -26,9 +26,9 @@ interface ConfigInterface
     /**
      * Returns the environment that the config is using.
      *
-     * @return  string
+     * @return  string|null
      */
-    public function getEnvironment(): string;
+    public function getEnvironment();
 
     /**
      * Returns a config value by a string key. If the key is not found,

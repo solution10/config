@@ -56,9 +56,9 @@ class FilesystemConfig implements ConfigInterface
     /**
      * Returns the environment that the config is using.
      *
-     * @return  string
+     * @return  string|null
      */
-    public function getEnvironment(): string
+    public function getEnvironment()
     {
         return $this->config->getEnvironment();
     }
@@ -157,7 +157,7 @@ class FilesystemConfig implements ConfigInterface
         }
 
         // Second loop is finding 'environment level' config for each basepath:
-        if ($this->config->getEnvironment() !== 'production') {
+        if ($this->config->getEnvironment() !== null) {
             foreach ($this->configPaths as $basePath) {
                 $envConfigFileCandidate = $basePath.'/'.$this->config->getEnvironment().'/'.$namespace.'.php';
                 if (file_exists($envConfigFileCandidate)) {

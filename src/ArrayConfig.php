@@ -17,7 +17,7 @@ class ArrayConfig implements ConfigInterface
     /**
      * @var     string
      */
-    protected $environment = 'production';
+    protected $environment = null;
 
     /**
      * @var     array
@@ -57,9 +57,9 @@ class ArrayConfig implements ConfigInterface
     /**
      * Returns the environment that the config is using.
      *
-     * @return  string
+     * @return  string|null
      */
-    public function getEnvironment(): string
+    public function getEnvironment()
     {
         return $this->environment;
     }
