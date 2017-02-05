@@ -14,7 +14,6 @@ on speed and lightness, whilst still retaining vital features.
 - [Installation](#installation)
 - [Documentation](#documentation)
     - [Userguide](#userguide)
-    - [API Docs](#api-docs)
 - [PHP Requirements](#php-requirements)
 - [Author](#author)
 - [License](#license)
@@ -22,7 +21,7 @@ on speed and lightness, whilst still retaining vital features.
 ## Features
 
 - No dependencies
-- PHP 7
+- PHP 5.6, 7.0, 7.1 and HHVM support
 - Lightning fast
 - Extremely light
 - Inheritance; define a base config and override per-environment
@@ -37,25 +36,13 @@ $ composer require solution10/config
 
 ## Documentation
 
-### Userguide
-
-[Check out the Wiki](https://github.com/Solution10/config/wiki)
-
-(or the /docs folder in the repo)
-
-### API Docs
-
-From a checkout of this project, run:
-
-    $ make apidocs
-
-This will create an api/ folder for you to peruse.
+Check out the docs/ folder in the repo.
 
 ## PHP Requirements
 
-- PHP >= 7.0
+- PHP >= 5.6
     - (If you require 5.3 support, versions up to 1.2.0 supported 5.3)
-    - (if you require < 7.0 support, versions up to 2.1 supported 5.4 - 5.6)
+    - (if you require < 5.6 support, versions up to 2.1 supported 5.4 & 5.5)
 
 ## Author
 
