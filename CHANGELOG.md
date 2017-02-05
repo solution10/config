@@ -4,7 +4,8 @@
 
 ### 3.0.0
 
-- **Config Class**
+**`FilesystemConfig` Class**
+- [BC Break] Rename from `Solution10\Config\Config`
 - [BC Break] Updated to PHP 7.0 as base version
 - [BC Break] Added scalar type hints
 - [BC Break] Accessors follow more standard `setXXX` and `getXXX` pattern.
@@ -16,6 +17,11 @@
 - Now uses `array_replace_recursive` rather than in-class replace.
 - Config paths are now optional in `__construct()`
 
+**`ArrayConfig` Class**
+- New Class for managing simple arrays of config
+
+**`ConfigInterface` Interface**
+- New Interface for tying together `FilesystemConfig` and `ArrayConfig` commonality.
 
 ## 2.x
 

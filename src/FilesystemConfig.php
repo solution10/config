@@ -2,8 +2,10 @@
 
 namespace Solution10\Config;
 
+use Solution10\Config\Common\Environment;
+
 /**
- * Class Config
+ * Class FilesystemConfig
  *
  * Super simple config loader/reader class. Supports inheritance across environments,
  * but not at lot else as the aim is to be wicked fast and light.
@@ -12,17 +14,14 @@ namespace Solution10\Config;
  * @author      Alex Gisby<alex@solution10.com>
  * @license     MIT
  */
-class Config
+class FilesystemConfig implements ConfigInterface
 {
+    use Environment;
+
     /**
      * @var     string[]  Paths to the config files
      */
     protected $configPaths = [];
-
-    /**
-     * @var     string  Environment folder. Defaults to "production" which is the top-level.
-     */
-    protected $environment = 'production';
 
     /**
      * @var     array   Cache for the loaded config
@@ -86,30 +85,6 @@ class Config
     }
 
     /**
-     * Setting the environment to read from. Note that this invalidates all loaded
-     * config so far, so if you've used values before changing this they might
-     * now be different. You've been warned!
-     *
-     * @param   string  $environment
-     * @return  $this
-     */
-    public function setEnvironment(string $environment)
-    {
-        $this->environment = $environment;
-        return $this;
-    }
-
-    /**
-     * Returns the environment that the config is using.
-     *
-     * @return  string
-     */
-    public function getEnvironment(): string
-    {
-        return $this->environment;
-    }
-
-    /**
      * Returns a value from the config. You can also provide a default if that
      * key is not present.
      *
@@ -121,7 +96,7 @@ class Config
      * @param   mixed   $default    Default value. Defaults to null.
      * @return  mixed
      */
-    public function get($key, $default = null)
+    public function get(string $key, $default = null)
     {
         // Grab the parts:
         $keyparts = explode('.', $key);
@@ -168,7 +143,7 @@ class Config
      * @param   string  $namespace
      * @return  array
      */
-    public function getRequiredFiles($namespace)
+    public function getRequiredFiles(string $namespace): array
     {
         $files = [];
 
@@ -200,7 +175,7 @@ class Config
      * @param   string  $file   File to load
      * @return  void
      */
-    protected function loadFile($file)
+    protected function loadFile(string $file)
     {
         $requiredFiles = $this->getRequiredFiles($file);
 

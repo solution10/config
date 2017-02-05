@@ -2,14 +2,14 @@
 
 namespace Solution10\Config\Tests;
 
-use PHPUnit_Framework_TestCase;
-use Solution10\Config\Config;
+use PHPUnit\Framework\TestCase;
+use Solution10\Config\FilesystemConfig;
 
-class ConfigTest extends PHPUnit_Framework_TestCase
+class FilesystemConfigTest extends TestCase
 {
     public function testConstructWithoutPaths()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $this->assertNull($c->get('person'));
         $this->assertNull($c->get('person.name'));
         $this->assertNull($c->get('person.location.home'));
@@ -17,7 +17,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testConstructWithPaths()
     {
-        $c = new Config([
+        $c = new FilesystemConfig([
             __DIR__.'/testconfig'
         ]);
         $this->assertEquals([
@@ -34,55 +34,64 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('London', $c->get('person.location.home'));
     }
 
+    /**
+     * @expectedException           \Solution10\Config\Exception
+     * @expectedExceptionMessage    Invalid or unreadable path:
+     */
+    public function testBadPath()
+    {
+        new FilesystemConfig([__DIR__.'/unknown']);
+    }
+
     /*
-     * ------------- Testing Basic Getting Config -----------------
+     * ------------- Testing Basic Getting FilesystemConfig -----------------
      */
 
     public function testGetConfigSimple()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('Alex', $c->get('person.name'));
     }
 
     public function testGetConfigMultiArray()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('orange', $c->get('person.bike.colour'));
     }
 
     public function testGetConfigUnknownFile()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertNull($c->get('unknown.key'));
     }
 
     public function testGetConfigKnownFileUnknownKey()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertNull($c->get('person.unknownkey'));
     }
 
     public function testGetConfigUnknownFileDefault()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals(27, $c->get('unknown.key', 27));
     }
 
     public function testGetConfigUnknownKeyDefault()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('five', $c->get('person.unknown', 'five'));
     }
 
     public function testGetConfigFromTwoFiles()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('Alex', $c->get('person.name'));
         $this->assertEquals('Poochie', $c->get('pet.name'));
@@ -90,7 +99,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testGetSubsection()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals(array(
             'colour' => 'orange',
@@ -99,14 +108,14 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testGetUnknownSubkey()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('Doodad', $c->get('person.name.unknown', 'Doodad'));
     }
 
     public function testGetUnknownSubkeys()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertNull($c->get('person.name.unknown.unknown'));
     }
@@ -117,7 +126,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testOverrideSimple()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('Tuey', $c->get('person.name'));
@@ -125,7 +134,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testOverridePreservesProduction()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('orange', $c->get('person.bike.colour'));
@@ -133,7 +142,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testOverrideSubArray()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('Tuey', $c->get('person.name'));
@@ -143,7 +152,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testOverrideNotPresentInEnvironment()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('Tuey', $c->get('person.name'));
@@ -152,7 +161,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testOverrideNewValues()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals('Pilot', $c->get('person.job'));
@@ -162,7 +171,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testOverridesChangeType()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $value = $c->get('mixedtypes.key');
@@ -175,7 +184,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testRequiredFilesBothPresent()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $files = $c->getRequiredFiles('person');
@@ -186,7 +195,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testRequiredFilesOnlyProduction()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $files = $c->getRequiredFiles('pet');
@@ -196,7 +205,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testRequiredFilesOnlyEnvironment()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $files = $c->getRequiredFiles('debugging');
@@ -206,7 +215,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testRequiredFilesNeitherPresent()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $files = $c->getRequiredFiles('building');
@@ -219,7 +228,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testRequiredFilesMultipleBasepaths()
     {
-        $c = (new Config())
+        $c = (new FilesystemConfig())
             ->setEnvironment('development')
             ->addConfigPaths([
                 __DIR__.'/testconfig',
@@ -235,7 +244,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testMultipleBasepathsConstructor()
     {
-        $c = (new Config())
+        $c = (new FilesystemConfig())
             ->setEnvironment('development')
             ->addConfigPaths([
                 __DIR__.'/testconfig',
@@ -254,7 +263,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
 
     public function testMultipleBasepathsAddingLater()
     {
-        $c = new Config();
+        $c = new FilesystemConfig();
         $c->setEnvironment('development');
         $c->addConfigPath(__DIR__.'/testconfig');
         $this->assertEquals($c, $c->addConfigPath(__DIR__.'/testconfig2'));
@@ -272,7 +281,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     public function testOverwritingOrder()
     {
         // Basepaths are evaluated as 'last set, first read'. So we can overwrite from a later base path.
-        $c = (new Config())
+        $c = (new FilesystemConfig())
             ->addConfigPaths([
                 __DIR__.'/testconfig',
                 __DIR__.'/testconfig2',
@@ -293,7 +302,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         //  {basepath-1}/{env}/person -> overwrites 'name' and other keys
         //  {basepath-2}/{env}/person -> doesn't exist, no overwrite
 
-        $c = (new Config())
+        $c = (new FilesystemConfig())
             ->setEnvironment('development')
             ->addConfigPaths([
                 __DIR__.'/testconfig',
